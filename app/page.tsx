@@ -1,11 +1,11 @@
 'use-client'
+import React from 'react'
+import LandingPage from '@/pages/LandingPage'
 
 export default function Home() {
 	return (
 		<main>
-			<div>
-				<p>Hey</p>
-			</div>
+			<LandingPage />
 		</main>
 	)
 }
