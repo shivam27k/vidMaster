@@ -8,3 +8,7 @@ export interface RTCConfiguration {
 	peerIdentity?: string
 	certificates?: RTCCertificate[]
 }
+
+export interface RtmMessage {
+	text: string
+}
