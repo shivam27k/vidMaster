@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { RTCConfiguration } from '@/app/types'
 import { RtmMessage } from 'agora-rtm-sdk/index'
 
@@ -7,12 +7,20 @@ const LandingPage = () => {
 	let localStream: MediaStream | undefined
 	let remoteStream: MediaStream | undefined
 	let peerConnection: RTCPeerConnection | undefined
-	let client
+	let client: any
 	let channel
 
+	const [loginSuccessful, setLoginSuccessful] = useState(false)
+	const [UID, setUID] = useState(String(Math.floor(Math.random() * 1010000)))
+
+	console.log('myuid', UID)
+
 	let APP_ID: string = 'a5953c3ce0794d0ab9bab769c761e8e8'
-	let token: null = null
-	let UID: string = String(Math.floor(Math.random() * 1010000))
+	// let token: null = null
+
+	useEffect(() => {
+		setUID(String(Math.floor(Math.random() * 1010000)))
+	}, [])
 
 	const servers: RTCConfiguration = {
 		iceServers: [
@@ -25,28 +33,16 @@ const LandingPage = () => {
 		],
 	}
 
-	let init = async () => {
+	const tryLogin = async () => {
 		const { default: AgoraRTM } = await import('agora-rtm-sdk')
 		client = AgoraRTM.createInstance(APP_ID)
-		await client.login({ uid: UID })
 
-		channel = client.createChannel('masterrr')
-		await channel.join()
-
-		channel.on('MemberJoined', handleUserJoined)
-
-		channel.on('ChannelMessage', handleChannelMessage)
-
-		localStream = await navigator.mediaDevices.getUserMedia({
-			audio: false,
-			video: true,
-		})
-
-		const user1Video = document.getElementById(
-			'user-1'
-		) as HTMLVideoElement | null
-		if (user1Video) {
-			user1Video.srcObject = localStream
+		try {
+			await client.login({ uid: UID })
+			setLoginSuccessful(true)
+		} catch (error) {
+			console.error('Login failed. Retrying in 5 seconds...')
+			setTimeout(tryLogin, 1000)
 		}
 	}
 
@@ -54,17 +50,43 @@ const LandingPage = () => {
 		console.log('MemberJoined', memberId)
 		createOffer(memberId)
 	}
+
 	const handleChannelMessage = async (
 		message: RtmMessage,
-		memberId: string
+		memberId: string,
+		messageProps: string
 	) => {
 		console.log('ChannelMessage', message.text, memberId)
 	}
 
-	let createOffer = async (memberId: any) => {
-		const { default: AgoraRTM } = await import('agora-rtm-sdk')
-		client = AgoraRTM.createInstance(APP_ID)
+	let init = async () => {
+		try {
+			await tryLogin()
 
+			channel = client.createChannel('masterrr')
+			await channel.join()
+
+			channel.on('MemberJoined', handleUserJoined)
+
+			channel.on('ChannelMessage', handleChannelMessage)
+
+			localStream = await navigator.mediaDevices.getUserMedia({
+				audio: false,
+				video: true,
+			})
+
+			const user1Video = document.getElementById(
+				'user-1'
+			) as HTMLVideoElement | null
+			if (user1Video) {
+				user1Video.srcObject = localStream
+			}
+		} catch (error) {
+			console.error('Error during initalization', error)
+		}
+	}
+
+	let createOffer = async (memberId: any) => {
 		peerConnection = new RTCPeerConnection(servers)
 		remoteStream = new MediaStream()
 

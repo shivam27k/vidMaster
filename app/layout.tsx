@@ -19,7 +19,10 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en">
-			<body className={`${inter.className} bg-white`}>
+			<body
+				className={`${inter.className} bg-white`}
+				suppressHydrationWarning={true}
+			>
 				<ThemeProvider>
 					<ClientThemeWrapper>
 						<div className="h-screen ">
