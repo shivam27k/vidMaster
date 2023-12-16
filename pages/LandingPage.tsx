@@ -10,7 +10,6 @@ const LandingPage = () => {
 	let client: any
 	let channel
 
-	const [loginSuccessful, setLoginSuccessful] = useState(false)
 	const [UID, setUID] = useState(String(Math.floor(Math.random() * 1010000)))
 
 	console.log('myuid', UID)
@@ -39,7 +38,6 @@ const LandingPage = () => {
 
 		try {
 			await client.login({ uid: UID })
-			setLoginSuccessful(true)
 		} catch (error) {
 			console.error('Login failed. Retrying in 5 seconds...')
 			setTimeout(tryLogin, 1000)
@@ -116,7 +114,7 @@ const LandingPage = () => {
 		let offer = await peerConnection.createOffer()
 		await peerConnection.setLocalDescription(offer)
 
-		client.sendMessageToPeer({ text: 'Hey' }, memberId)
+		client.sendMessageToPeer({ text: 'Hey I am here' }, memberId)
 	}
 
 	useEffect(() => {
