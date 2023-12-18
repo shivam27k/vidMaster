@@ -1,14 +1,14 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { RTCConfiguration } from '@/app/types'
-import { RtmMessage } from 'agora-rtm-sdk/index'
+import { RtmClient, RtmMessage, RtmTextMessage } from 'agora-rtm-sdk/index'
 
 const LandingPage = () => {
 	let localStream: MediaStream | undefined
 	let remoteStream: MediaStream | undefined
 	let peerConnection: RTCPeerConnection | undefined
-	let client: any
-	let channel
+	let client: RtmClient
+	let channel: any
 
 	const [UID, setUID] = useState(String(Math.floor(Math.random() * 1010000)))
 
@@ -36,11 +36,18 @@ const LandingPage = () => {
 		const { default: AgoraRTM } = await import('agora-rtm-sdk')
 		client = AgoraRTM.createInstance(APP_ID)
 
+		client.on(
+			'MessageFromPeer',
+			(message: RtmMessage, memberId: string) => {
+				console.log('MessageFromPeer', message.text, memberId)
+			}
+		)
+
 		try {
 			await client.login({ uid: UID })
 		} catch (error) {
 			console.error('Login failed. Retrying in 5 seconds...')
-			setTimeout(tryLogin, 1000)
+			setTimeout(tryLogin, 3000)
 		}
 	}
 
@@ -50,11 +57,10 @@ const LandingPage = () => {
 	}
 
 	const handleChannelMessage = async (
-		message: RtmMessage,
-		memberId: string,
-		messageProps: string
+		message: RtmTextMessage,
+		memberId: string
 	) => {
-		console.log('ChannelMessage', message.text, memberId)
+		console.log('ChannelMessage', message, memberId)
 	}
 
 	let init = async () => {
