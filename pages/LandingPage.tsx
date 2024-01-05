@@ -1,5 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { RTCConfiguration } from '@/app/types'
 import { RtmClient, RtmMessage, RtmTextMessage } from 'agora-rtm-sdk/index'
 import Loading from '@/components/loading'
@@ -10,11 +11,12 @@ const LandingPage = () => {
 	let peerConnection: RTCPeerConnection | undefined
 	let client: RtmClient
 	let channel: any
+	const searchParams: any = useSearchParams()
 
 	const [UID, setUID] = useState(String(Math.floor(Math.random() * 1010000)))
 
-	let queryString: string = window.location.search
-	let urlParams: any = new URLSearchParams(queryString)
+	let queryString: string = searchParams
+	let urlParams: URLSearchParams = new URLSearchParams(queryString)
 	let roomId: any = urlParams.get('room')
 
 	useEffect(() => {

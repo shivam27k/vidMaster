@@ -24,7 +24,7 @@ const NavBar = () => {
 	return (
 		<div className="flex flex-row items-center p-5 justify-between border-2">
 			<div>
-				<Link href="/">
+				<Link href={links[0].href}>
 					<h1 className="text-700 text-2xl">VidMasTer</h1>
 				</Link>
 			</div>

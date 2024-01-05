@@ -2,10 +2,6 @@
 import React, { useState } from 'react'
 
 const LobbyRoom = () => {
-	const [roomId, setRoomId] = useState('')
-
-	console.log('room id', roomId)
-
 	const handleNavigation = (roomIdEntered: any) => {
 		window.location.href = `/?room=${roomIdEntered}`
 	}
@@ -29,9 +25,6 @@ const LobbyRoom = () => {
 						type="text"
 						placeholder="Type here"
 						name="room_id"
-						onChange={(event) => {
-							setRoomId(event.target.value)
-						}}
 						className="input input-bordered w-full max-w-xs"
 					/>
 				</label>
