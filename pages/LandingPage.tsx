@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { RTCConfiguration } from '@/app/types'
 import { RtmClient, RtmMessage, RtmTextMessage } from 'agora-rtm-sdk/index'
+import Loading from '@/components/loading'
 
 const LandingPage = () => {
 	let localStream: MediaStream | undefined
@@ -9,9 +10,18 @@ const LandingPage = () => {
 	let peerConnection: RTCPeerConnection | undefined
 	let client: RtmClient
 	let channel: any
-	// let parsedMessage: any
 
 	const [UID, setUID] = useState(String(Math.floor(Math.random() * 1010000)))
+
+	let queryString: string = window.location.search
+	let urlParams: any = new URLSearchParams(queryString)
+	let roomId: any = urlParams.get('room')
+
+	useEffect(() => {
+		if (!roomId) {
+			window.location.href = '/lobby'
+		}
+	}, [roomId])
 
 	let APP_ID: string = 'a5953c3ce0794d0ab9bab769c761e8e8'
 
@@ -194,7 +204,7 @@ const LandingPage = () => {
 		try {
 			await tryLogin()
 
-			channel = client.createChannel('master')
+			channel = client.createChannel(roomId)
 			await channel.join()
 
 			channel.on('MemberJoined', handleUserJoined)
@@ -228,26 +238,40 @@ const LandingPage = () => {
 		await client.logout()
 	}
 
-	window.addEventListener('beforeunload', leaveChannel)
+	useEffect(() => {
+		window.addEventListener('beforeunload', leaveChannel)
+
+		return () => {
+			window.removeEventListener('beforeunload', leaveChannel)
+		}
+	})
 
 	return (
-		<div className="">
-			<div className="flex flex-row gap-10 p-10">
-				<video
-					className="bg-[#000] w-1/2 h-[30rem]"
-					id="user-1"
-					autoPlay
-					playsInline
-				></video>
-				<video
-					className="bg-[#000] w-1/2 h-[30rem]"
-					id="user-2"
-					style={{ display: 'none' }}
-					autoPlay
-					playsInline
-				></video>
-			</div>
-		</div>
+		<>
+			{roomId ? (
+				<div className="">
+					<div className="flex flex-row gap-10 p-10">
+						<video
+							className="bg-[#000] w-1/2 h-[30rem]"
+							id="user-1"
+							autoPlay
+							playsInline
+						></video>
+						<video
+							className="bg-[#000] w-1/2 h-[30rem]"
+							id="user-2"
+							style={{ display: 'none' }}
+							autoPlay
+							playsInline
+						></video>
+					</div>
+				</div>
+			) : (
+				<>
+					<Loading />
+				</>
+			)}
+		</>
 	)
 }
 
