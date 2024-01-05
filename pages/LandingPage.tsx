@@ -81,6 +81,7 @@ const LandingPage = () => {
 		) as HTMLVideoElement | null
 		if (user2Video) {
 			user2Video.srcObject = remoteStream
+			user2Video.style.display = 'block'
 		}
 
 		if (!localStream) {
@@ -180,6 +181,15 @@ const LandingPage = () => {
 		}
 	}
 
+	const handleUserLeft = async (memberId: any) => {
+		const user2Video = document.getElementById(
+			'user-2'
+		) as HTMLVideoElement | null
+		if (user2Video) {
+			user2Video.style.display = 'none'
+		}
+	}
+
 	let init = async () => {
 		try {
 			await tryLogin()
@@ -190,6 +200,8 @@ const LandingPage = () => {
 			channel.on('MemberJoined', handleUserJoined)
 
 			channel.on('ChannelMessage', handleChannelMessage)
+
+			channel.on('MemberLeft', handleUserLeft)
 
 			localStream = await navigator.mediaDevices.getUserMedia({
 				audio: false,
@@ -211,6 +223,13 @@ const LandingPage = () => {
 		init()
 	})
 
+	const leaveChannel = async () => {
+		await channel.leave()
+		await client.logout()
+	}
+
+	window.addEventListener('beforeunload', leaveChannel)
+
 	return (
 		<div className="">
 			<div className="flex flex-row gap-10 p-10">
@@ -223,6 +242,7 @@ const LandingPage = () => {
 				<video
 					className="bg-[#000] w-1/2 h-[30rem]"
 					id="user-2"
+					style={{ display: 'none' }}
 					autoPlay
 					playsInline
 				></video>
