@@ -43,8 +43,8 @@ const LandingPage = () => {
 				addAnswer(parsedMessage?.answer)
 			}
 			if (parsedMessage?.type === 'candidate') {
-				if (peerConnection) {
-					peerConnection.addIceCandidate(parsedMessage?.candidate)
+				if (parsedMessage?.candidate) {
+					peerConnection?.addIceCandidate(parsedMessage?.candidate)
 				}
 			}
 		}
@@ -108,15 +108,21 @@ const LandingPage = () => {
 
 		peerConnection.onicecandidate = (event) => {
 			try {
-				client.sendMessageToPeer(
-					{
-						text: JSON.stringify({
-							type: 'candidate',
-							candidate: event?.candidate,
-						}),
-					},
-					memberId
-				)
+				if (peerConnection && peerConnection.remoteDescription) {
+					client.sendMessageToPeer(
+						{
+							text: JSON.stringify({
+								type: 'candidate',
+								candidate: event?.candidate,
+							}),
+						},
+						memberId
+					)
+				} else {
+					console.warn(
+						'Remote description is not set. Ice candidate not added.'
+					)
+				}
 			} catch (err) {
 				console.error('Error sending ICE candidate', err)
 			}
@@ -143,7 +149,10 @@ const LandingPage = () => {
 		}
 	}
 
-	let createAnswer = async (offer: any, memberId: any) => {
+	let createAnswer = async (
+		offer: RTCSessionDescriptionInit,
+		memberId: any
+	) => {
 		await createPeerConnection(memberId)
 
 		await peerConnection?.setRemoteDescription(offer)
