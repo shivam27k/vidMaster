@@ -9,13 +9,11 @@ const LandingPage = () => {
 	let peerConnection: RTCPeerConnection | undefined
 	let client: RtmClient
 	let channel: any
+	// let parsedMessage: any
 
 	const [UID, setUID] = useState(String(Math.floor(Math.random() * 1010000)))
 
-	console.log('myuid', UID)
-
 	let APP_ID: string = 'a5953c3ce0794d0ab9bab769c761e8e8'
-	// let token: null = null
 
 	useEffect(() => {
 		setUID(String(Math.floor(Math.random() * 1010000)))
@@ -32,42 +30,152 @@ const LandingPage = () => {
 		],
 	}
 
+	const handleMessageFromPeer = async (
+		message: RtmMessage,
+		memberId: string
+	) => {
+		if (message.text) {
+			const parsedMessage = JSON.parse(message.text)
+			if (parsedMessage?.type === 'offer') {
+				createAnswer(parsedMessage?.offer, memberId)
+			}
+			if (parsedMessage?.type === 'answer') {
+				addAnswer(parsedMessage?.answer)
+			}
+			if (parsedMessage?.type === 'candidate') {
+				if (peerConnection) {
+					peerConnection.addIceCandidate(parsedMessage?.candidate)
+				}
+			}
+		}
+	}
+
 	const tryLogin = async () => {
 		const { default: AgoraRTM } = await import('agora-rtm-sdk')
 		client = AgoraRTM.createInstance(APP_ID)
 
-		client.on(
-			'MessageFromPeer',
-			(message: RtmMessage, memberId: string) => {
-				console.log('MessageFromPeer', message.text, memberId)
-			}
-		)
+		client.on('MessageFromPeer', handleMessageFromPeer)
 
 		try {
 			await client.login({ uid: UID })
 		} catch (error) {
-			console.error('Login failed. Retrying in 5 seconds...')
-			setTimeout(tryLogin, 3000)
+			setTimeout(tryLogin, 10000)
 		}
 	}
 
 	const handleUserJoined = async (memberId: any) => {
-		console.log('MemberJoined', memberId)
 		createOffer(memberId)
 	}
 
 	const handleChannelMessage = async (
 		message: RtmTextMessage,
 		memberId: string
-	) => {
-		console.log('ChannelMessage', message, memberId)
+	) => {}
+
+	let createPeerConnection = async (memberId: any) => {
+		peerConnection = new RTCPeerConnection(servers)
+		remoteStream = new MediaStream()
+
+		const user2Video = document.getElementById(
+			'user-2'
+		) as HTMLVideoElement | null
+		if (user2Video) {
+			user2Video.srcObject = remoteStream
+		}
+
+		if (!localStream) {
+			localStream = await navigator.mediaDevices.getUserMedia({
+				audio: false,
+				video: true,
+			})
+			const user1Video = document.getElementById(
+				'user-1'
+			) as HTMLVideoElement | null
+			if (user1Video) {
+				user1Video.srcObject = localStream
+			}
+		}
+
+		localStream?.getTracks().forEach((track) => {
+			peerConnection?.addTrack(track, localStream!)
+		})
+
+		peerConnection.ontrack = (event) => {
+			event.streams[0].getTracks().forEach((track) => {
+				remoteStream?.addTrack(track)
+			})
+		}
+
+		peerConnection.onicecandidate = (event) => {
+			try {
+				client.sendMessageToPeer(
+					{
+						text: JSON.stringify({
+							type: 'candidate',
+							candidate: event?.candidate,
+						}),
+					},
+					memberId
+				)
+			} catch (err) {
+				console.error('Error sending ICE candidate', err)
+			}
+		}
+	}
+
+	let createOffer = async (memberId: any) => {
+		await createPeerConnection(memberId)
+
+		let offer = await peerConnection?.createOffer()
+		await peerConnection?.setLocalDescription(offer)
+		try {
+			client.sendMessageToPeer(
+				{
+					text: JSON.stringify({
+						type: 'offer',
+						offer: offer,
+					}),
+				},
+				memberId
+			)
+		} catch (err) {
+			console.error('Error sending offer', err)
+		}
+	}
+
+	let createAnswer = async (offer: any, memberId: any) => {
+		await createPeerConnection(memberId)
+
+		await peerConnection?.setRemoteDescription(offer)
+		let answer = await peerConnection?.createAnswer()
+		await peerConnection?.setLocalDescription(answer)
+
+		try {
+			client.sendMessageToPeer(
+				{
+					text: JSON.stringify({
+						type: 'answer',
+						answer: answer,
+					}),
+				},
+				memberId
+			)
+		} catch (err) {
+			console.error('Error sending answer', err)
+		}
+	}
+
+	let addAnswer = async (answer: any) => {
+		if (!peerConnection?.currentRemoteDescription) {
+			await peerConnection?.setRemoteDescription(answer)
+		}
 	}
 
 	let init = async () => {
 		try {
 			await tryLogin()
 
-			channel = client.createChannel('masterrr')
+			channel = client.createChannel('master')
 			await channel.join()
 
 			channel.on('MemberJoined', handleUserJoined)
@@ -88,39 +196,6 @@ const LandingPage = () => {
 		} catch (error) {
 			console.error('Error during initalization', error)
 		}
-	}
-
-	let createOffer = async (memberId: any) => {
-		peerConnection = new RTCPeerConnection(servers)
-		remoteStream = new MediaStream()
-
-		const user2Video = document.getElementById(
-			'user-2'
-		) as HTMLVideoElement | null
-		if (user2Video) {
-			user2Video.srcObject = remoteStream
-		}
-
-		localStream?.getTracks().forEach((track) => {
-			peerConnection?.addTrack(track, localStream!)
-		})
-
-		peerConnection.ontrack = (event) => {
-			event.streams[0].getTracks().forEach((track) => {
-				remoteStream?.addTrack(track)
-			})
-		}
-
-		peerConnection.onicecandidate = (event) => {
-			if (event.candidate) {
-				console.log('New ICE Candidate:', event.candidate)
-			}
-		}
-
-		let offer = await peerConnection.createOffer()
-		await peerConnection.setLocalDescription(offer)
-
-		client.sendMessageToPeer({ text: 'Hey I am here' }, memberId)
 	}
 
 	useEffect(() => {
