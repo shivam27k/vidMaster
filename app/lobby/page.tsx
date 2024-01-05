@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 
 const LobbyRoom = () => {
 	const handleNavigation = (roomIdEntered: any) => {
-		window.location.href = `/?room=${roomIdEntered}`
+		window.location.href = `/?room=${roomIdEntered.replace(/\s/g, '')}`
 	}
 
 	const handleSubmit = (e: any) => {
