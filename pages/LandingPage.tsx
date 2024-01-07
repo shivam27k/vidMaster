@@ -249,24 +249,6 @@ const LandingPage = () => {
 			{roomId ? (
 				<div className="bg-white overflow-hidden">
 					<div className={`flex flex-row gap-5 p-10`}>
-						{/* <button
-							onClick={() => {
-								setSwapVideos(!swapVideos)
-							}}
-						>
-							<video
-								className={`bg-[#000] flex-${
-									swapVideos ? null : 1
-								}  w-[${swapVideos ? '5rem' : '60vw'}] h-[${
-									swapVideos ? '5rem' : '70vh'
-								}]`}
-								id="user-1"
-								autoPlay
-								playsInline
-							/>
-							<p>User 1</p>
-						</button> */}
-
 						<VideComponent
 							flex={swapVideos ? null : 1}
 							width={swapVideos ? '5rem' : '60vw'}
@@ -279,24 +261,6 @@ const LandingPage = () => {
 							userText={'User-1'}
 						/>
 
-						{/* <button
-							onClick={() => {
-								setSwapVideos(!swapVideos)
-							}}
-						>
-							<video
-								className={`bg-[#000]  flex-${
-									swapVideos ? 1 : null
-								}  w-[${swapVideos ? '60vw' : '5rem'}] h-[${
-									swapVideos ? '70vh' : '5rem'
-								}]`}
-								id="user-2"
-								style={{ display: 'none' }}
-								autoPlay
-								playsInline
-							/>
-							<p>User 2</p>
-						</button> */}
 						<VideComponent
 							flex={swapVideos ? 1 : null}
 							width={swapVideos ? '60vw' : '5rem'}
