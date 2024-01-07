@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation'
 import { RTCConfiguration } from '@/app/types'
 import { RtmClient, RtmMessage, RtmTextMessage } from 'agora-rtm-sdk/index'
 import Loading from '@/components/loading'
+import VideComponent from '@/components/videComponent'
 
 const LandingPage = () => {
 	let localStream: MediaStream | undefined
@@ -12,6 +13,8 @@ const LandingPage = () => {
 	let client: RtmClient
 	let channel: any
 	const searchParams: any = useSearchParams()
+
+	const [swapVideos, setSwapVideos] = useState(true)
 
 	const [UID, setUID] = useState(String(Math.floor(Math.random() * 1010000)))
 
@@ -78,11 +81,6 @@ const LandingPage = () => {
 	const handleUserJoined = async (memberId: any) => {
 		createOffer(memberId)
 	}
-
-	const handleChannelMessage = async (
-		message: RtmTextMessage,
-		memberId: string
-	) => {}
 
 	let createPeerConnection = async (memberId: any) => {
 		peerConnection = new RTCPeerConnection(servers)
@@ -211,8 +209,6 @@ const LandingPage = () => {
 
 			channel.on('MemberJoined', handleUserJoined)
 
-			channel.on('ChannelMessage', handleChannelMessage)
-
 			channel.on('MemberLeft', handleUserLeft)
 
 			localStream = await navigator.mediaDevices.getUserMedia({
@@ -251,21 +247,67 @@ const LandingPage = () => {
 	return (
 		<>
 			{roomId ? (
-				<div className="">
-					<div className="flex flex-row gap-10 p-10">
-						<video
-							className="bg-[#000] w-1/2 h-[30rem]"
-							id="user-1"
-							autoPlay
-							playsInline
-						></video>
-						<video
-							className="bg-[#000] w-1/2 h-[30rem]"
-							id="user-2"
+				<div className="bg-white overflow-hidden">
+					<div className={`flex flex-row gap-5 p-10`}>
+						{/* <button
+							onClick={() => {
+								setSwapVideos(!swapVideos)
+							}}
+						>
+							<video
+								className={`bg-[#000] flex-${
+									swapVideos ? null : 1
+								}  w-[${swapVideos ? '5rem' : '60vw'}] h-[${
+									swapVideos ? '5rem' : '70vh'
+								}]`}
+								id="user-1"
+								autoPlay
+								playsInline
+							/>
+							<p>User 1</p>
+						</button> */}
+
+						<VideComponent
+							flex={swapVideos ? null : 1}
+							width={swapVideos ? '5rem' : '60vw'}
+							height={swapVideos ? '5rem' : '70vh'}
+							id={'user-1'}
+							onClick={() => {
+								setSwapVideos(!swapVideos)
+							}}
+							style={null}
+							userText={'User-1'}
+						/>
+
+						{/* <button
+							onClick={() => {
+								setSwapVideos(!swapVideos)
+							}}
+						>
+							<video
+								className={`bg-[#000]  flex-${
+									swapVideos ? 1 : null
+								}  w-[${swapVideos ? '60vw' : '5rem'}] h-[${
+									swapVideos ? '70vh' : '5rem'
+								}]`}
+								id="user-2"
+								style={{ display: 'none' }}
+								autoPlay
+								playsInline
+							/>
+							<p>User 2</p>
+						</button> */}
+						<VideComponent
+							flex={swapVideos ? 1 : null}
+							width={swapVideos ? '60vw' : '5rem'}
+							height={swapVideos ? '70vh' : '5rem'}
+							id={'user-2'}
+							onClick={() => {
+								setSwapVideos(!swapVideos)
+							}}
 							style={{ display: 'none' }}
-							autoPlay
-							playsInline
-						></video>
+							userText={'User-2'}
+						/>
 					</div>
 				</div>
 			) : (
