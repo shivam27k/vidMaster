@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation'
 import { RTCConfiguration } from '@/app/types'
 import { RtmClient, RtmMessage, RtmTextMessage } from 'agora-rtm-sdk/index'
 import Loading from '@/components/loading'
-import VideComponent from '@/components/videComponent'
+import VideoComponent from '@/components/videoComponent'
 
 const LandingPage = () => {
 	let localStream: MediaStream | undefined
@@ -249,27 +249,28 @@ const LandingPage = () => {
 			{roomId ? (
 				<div className="bg-white overflow-hidden">
 					<div className={`flex flex-row gap-5 p-10`}>
-						<VideComponent
+						<VideoComponent
 							flex={swapVideos ? null : 1}
 							width={swapVideos ? '5rem' : '60vw'}
 							height={swapVideos ? '5rem' : '70vh'}
 							id={'user-1'}
 							onClick={() => {
+								console.log('void vid 1')
 								setSwapVideos(!swapVideos)
 							}}
-							style={null}
 							userText={'User-1'}
 						/>
 
-						<VideComponent
+						<VideoComponent
 							flex={swapVideos ? 1 : null}
 							width={swapVideos ? '60vw' : '5rem'}
 							height={swapVideos ? '70vh' : '5rem'}
 							id={'user-2'}
 							onClick={() => {
+								console.log('void vid 2')
 								setSwapVideos(!swapVideos)
 							}}
-							style={{ display: 'none' }}
+							// style={{ display: 'none' }}
 							userText={'User-2'}
 						/>
 					</div>

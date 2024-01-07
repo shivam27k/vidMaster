@@ -1,16 +1,16 @@
 import React, { FunctionComponent } from 'react'
 
 type Props = {
-	onClick: any
-	width: any
-	flex: any
-	height: any
+	onClick?: any
+	width?: any
+	flex?: any
+	height?: any
 	id: any
-	style: any
+	style?: any
 	userText: any
 }
 
-const VideComponent: FunctionComponent<Props> = ({
+const VideoComponent: FunctionComponent<Props> = ({
 	onClick,
 	width,
 	flex,
@@ -35,4 +35,4 @@ const VideComponent: FunctionComponent<Props> = ({
 	)
 }
 
-export default VideComponent
+export default VideoComponent
